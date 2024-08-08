@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_scripts %}
+    <script src="{% static "js/vendor/readmore.min.js" %}"></script>
+
+    <script src="{% static "js/vendor/jquery.tablesorter.min.js" %}"></script>
+
+    <style>
+    #public_submission_table th b {
+        cursor: pointer;
+    }
+    </style>
+{% endblock %}
+
+{% block page_title %}Public Submissions{% endblock page_title %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 pull-left">
+        <a href="{% url "competitions:view" pk=competition.pk %}">Go Back to Competition Homepage</a>
+    </div>
+</div>
+<br>
+<input type="hidden" id="competitionId" value="{{competition.id}}" />
+    <div class="tab-pane public_submissions">
+        <div class="tab-inner">
+        <!-- This will buttons depending on the number of phases -->
+                {%include "web/competitions/_public_submissions_phases.html"%}
+        </div>
+    </div>
+{% endblock %}
+
+{% block jsincludes %}
+<script>
+// This will happen during first load.
+var competitionId = $('#competitionId').val();
+Competition.getPublicPhaseSubmisisons(competitionId, {{ active_phase.id }});
+</script>
+{% endblock %}

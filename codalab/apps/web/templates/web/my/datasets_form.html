@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% load codalab_tags %}
+{% load tz %}
+
+{% block page_title %}Dataset {% if "update" not in request.path %}Create{% else %}Update{% endif %}{% endblock page_title %}
+{% block head_title %}Dataset {% if "update" not in request.path %}Create{% else %}Update{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-sm-9">
+        <form id="dataset_form" action="#" method="POST" enctype="multipart/form-data" class="form-controller">{% csrf_token %}
+            <fieldset>
+                <legend>{% if "update" not in request.path %}Create{% else %}Update{% endif %} Dataset</legend>
+                {% for field in form %}
+                    {% if field.name == "data_file" %}
+                        <div class="btn-group margin-top margin-bottom">
+                            <button type="button" id="single_dataset_button" class="button btn btn-default btn-secondary active">Single new dataset</button>
+                            <button type="button" id="multiple_dataset_button" class="button btn btn-default">Many existing datasets bundled into one new dataset</button>
+                        </div>
+                    {% endif %}
+                    <div class="form-group {% if field.name == 'data_file' or field.name == 'sub_data_files' %}hide{% endif %}{% if field.errors%} has-error{% endif %}" id="{{field.name}}-field-container">
+                        <label for="{{field.id_for_label}}" class="control-label">
+                            {{field.label}}{{form.label_suffix}}
+                        </label>
+                        {{ field }}
+                        {% if field.errors %}
+                            <span class="help-block">
+                                {{ field.errors }}
+                            </span>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </fieldset>
+            <input id="dataset_submit_button" type="submit" value="{% if "update" in request.path %}Save changes{% else %}Upload{% endif %}" class="button btn btn-primary">
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+$(function () {
+    $("#single_dataset_button").click(function() {
+        $("#data_file-field-container").removeClass("hide");
+        $("#multiple_dataset_button").removeClass("active btn-secondary");
+        $(this).addClass("active btn-secondary");
+        $("#sub_data_files-field-container").addClass("hide");
+    });
+
+    $("#multiple_dataset_button").click(function() {
+        $("#data_file-field-container").addClass("hide");
+        $(this).addClass("active btn-secondary");
+        $("#single_dataset_button").removeClass("active btn-secondary");
+        $("#sub_data_files-field-container").removeClass("hide");
+    });
+
+    // Setup multiselect datasets
+    $("#id_sub_data_files").select2();
+
+    // Remove single dataset reference if
+    $("#dataset_submit_button").click(function(e){
+        e.preventDefault();
+
+        var is_multiple_bundle_showing = $("#data_file-field-container").hasClass("hide");
+
+        if(is_multiple_bundle_showing) {
+            // Verify that we actually have some data selected
+            if(!$('#id_sub_data_files').val()) {
+                alert("No existing datasets selected, please select at least one");
+                return;
+            }
+
+            // confirm we want to delete data file if one was selected or already has been uploaded
+            var data_file_to_upload_path = $('#id_data_file').val();
+            if(data_file_to_upload_path != "" || $('#data_file-clear_id').length > 0) {
+                var delete_confirm = confirm("Are you sure you want to submit as a multiple bundle and delete the single data file?");
+
+                if(delete_confirm) {
+                    $('#data_file-clear_id').attr('checked', 'checked');
+                } else {
+                    return;
+                }
+            }
+        } else {
+            // uncheck delete dataset single file
+            $('#data_file-clear_id').attr('checked', null);
+
+            var multi_files = $('#id_sub_data_files').val();
+
+            if(multi_files !== null && multi_files.length > 0) {
+                var confirm_clear_multi = confirm("Are you sure you want to make this a single file dataset? All selected files in the multi section will be cleared.");
+
+                if(confirm_clear_multi) {
+                    $('#id_sub_data_files').select2('val', '');
+                } else {
+                    return;
+                }
+            }
+        }
+
+        $("#dataset_form").submit();
+    });
+
+    // Init form single or many selection
+    var instance_already_many = {% if form.instance and form.instance.sub_data_files.all %}true{% else %}false{% endif %};
+    var dataset_form_single_or_many = localStorage.getItem("dataset_form_single_or_many");
+
+    if(instance_already_many) {
+        $('#multiple_dataset_button').click();
+    } else {
+        $('#single_dataset_button').click();
+    }
+});
+{% endblock js %}

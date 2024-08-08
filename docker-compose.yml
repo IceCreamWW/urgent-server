@@ -1,0 +1,185 @@
+version: '2'
+services:
+  # --------------------------------------------------------------------------
+  # HTTP Server
+  # --------------------------------------------------------------------------
+  nginx:
+    image: nginx
+    restart: unless-stopped
+    ports:
+      - ${NGINX_EXPOSE_PORT}:${NGINX_PORT}
+      - ${SSL_EXPOSE_PORT}:${SSL_PORT}
+    command: bash -x /app/docker/run_nginx.sh
+    volumes:
+      - ./certs:/app/certs
+      - ./docker:/app/docker
+      - ./codalab:/app/codalab
+      - ${LOGGING_DIR}/nginx:/var/log/nginx/
+    env_file: .env
+    links:
+      - django:django
+    logging:
+      options:
+        max-size: "200k"
+    container_name: nginx-ears
+
+
+  # --------------------------------------------------------------------------
+  # Database
+  # --------------------------------------------------------------------------
+  postgres:
+    image: postgres:9.6.3
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - ./docker:/app/docker
+      - ${LOGGING_DIR}/psql:/var/log/psql
+      - ${DB_DATA_PATH}:/var/lib/postgresql/data
+      - ./backups:/app/backups
+    env_file: .env
+    logging:
+      options:
+        max-size: "200k"
+    container_name: postgres-ears
+
+
+  # --------------------------------------------------------------------------
+  # Message queue
+  # --------------------------------------------------------------------------
+  rabbit:
+    build:
+      # Custom Dockerfile for rabbit mostly to make building faster because
+      # of envsubst dependency
+      context: .
+      dockerfile: docker/rabbitmq/Dockerfile
+    restart: unless-stopped
+    hostname: rabbit
+    command: bash -x /app/docker/run_rabbitmq.sh
+    environment:
+      - RABBITMQ_LOGS=/var/log/rabbitmq/output.log
+      - RABBITMQ_SASL_LOGS=/var/log/rabbitmq/output_sasl.log
+    env_file: .env
+    volumes:
+      - ./docker:/app/docker
+      - ./certs:/app/certs
+      - ${LOGGING_DIR}/rabbitmq:/var/log/rabbitmq
+      - ./var/data/rabbitmq/:/var/lib/rabbitmq/mnesia
+      #     ports:
+      #       - ${RABBITMQ_PORT}:${RABBITMQ_PORT}
+      #       - ${RABBITMQ_MANAGEMENT_PORT}:${RABBITMQ_MANAGEMENT_PORT}
+    logging:
+      options:
+        max-size: "200k"
+    container_name: rabbit-ears
+
+  # --------------------------------------------------------------------------
+  # Cache
+  # --------------------------------------------------------------------------
+  memcached:
+    image: memcached
+    restart: unless-stopped
+    hostname: memcached
+    command: "/usr/local/bin/memcached -u memcache"
+    logging:
+      options:
+        max-size: "200k"
+    container_name: memcached-ears
+
+
+  # --------------------------------------------------------------------------
+  # Django
+  # --------------------------------------------------------------------------
+  django:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    hostname: django
+    #     ports:
+    #       - ${DJANGO_PORT}:${DJANGO_PORT}
+    command: bash /app/docker/run_django.sh
+    volumes:
+      - ./certs:/app/certs
+      - ./codalab:/app/codalab
+      - ./docker:/app/docker
+      - ${LOGGING_DIR}/django:/var/log/django/
+      - ./backups:/app/backups
+    env_file: .env
+    environment:
+      - CONFIG_SERVER_NAME=${CODALAB_SITE_DOMAIN}
+      - PYTHONUNBUFFERED=1
+    links:
+      - postgres
+      - rabbit
+      - memcached
+    logging:
+      options:
+        max-size: "200k"
+    container_name: django-ears
+    
+
+  # --------------------------------------------------------------------------
+  # Celery Workers
+  # --------------------------------------------------------------------------
+  worker_site:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    command: sh /app/docker/run_site.sh
+    volumes:
+      - ./codalab:/app/codalab
+      - ./docker:/app/docker
+      - ${LOGGING_DIR}/worker_site:/var/log/
+    environment:
+      # Stop memory leaks
+      - DEBUG=False
+      - REQUESTS_CA_BUNDLE=/usr/local/lib/python3.8/site-packages/certifi/cacert.pem
+    env_file: .env
+    links:
+      - postgres
+      - rabbit
+    logging:
+      options:
+        max-size: "200k"
+    container_name: worker-site-ears
+
+  worker_ears:
+    build:
+      context: worker
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - TRACK=ears
+      - BROKER_URL=pyamqp://7f541161-6af6-43a3-821c-4332006d7a97:40754acf-6723-49b9-b81f-ef06fa7b5106@rabbit:5672/394337fa-550b-47e3-bcf5-2c32e4e14baa
+    hostname: worker_ears
+    links:
+      - rabbit
+    logging:
+      options:
+        max-size: "200k"
+    mem_limit: 1g
+    memswap_limit: 1g
+    container_name: worker-ears
+
+    #   collector:
+    #     build:
+    #       context: collector
+    #       dockerfile: Dockerfile
+    #     restart: unless-stopped
+    #     env_file: .env
+    #     ports:
+    #       - ${COLLECTOR_EXPOSE_PORT}:80
+    #     volumes:
+    #       - ./var/data/collector/:/data
+    #     logging:
+    #       options:
+    #         max-size: "200k"
+    #     mem_limit: 1g
+    #     memswap_limit: 1g
+    #     container_name: collector-ears
+    #       

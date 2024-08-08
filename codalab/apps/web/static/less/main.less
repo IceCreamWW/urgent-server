@@ -1,0 +1,336 @@
+body {
+    padding-top:@navbar-height + 2px; // include bottom border;
+    padding-bottom:@footer-height;
+    > .container {
+        padding-bottom:36px;
+    }
+    &.ws-interface {
+        > .container {
+            padding-bottom:0;
+        }
+    }
+}
+
+@media (min-width: 992px) {
+    .container {
+        width: 1170px;
+    }
+}
+
+.jumbotron {
+    background: url('../img/slider_exp_comp.gif') repeat-x center center;
+    background-size:cover;
+    background-color: @brand-primary;
+    text-align:center;
+    padding: 0;
+    margin-bottom: 0;
+    img.img-responsive {
+        max-width:90%;
+        margin:0 5%;
+    }
+    h4 {
+        margin-top: 0;
+        font-size:24px;
+    }
+}
+.page-header {
+    margin:0 0 20px;
+    border:none;
+    background: url('../img/tiled-header-bg.gif') repeat-x top left;
+    min-height: 80px;
+    color:white;
+    h1 {
+        margin-top:14px;
+        margin-bottom:0;
+    }
+}
+// Alerts
+.alert-box.alert {
+    code {
+        font-weight:normal;
+        color:white;
+        background-color:transparent;
+    }
+    a:not(.close) {
+        color:#fff;
+        text-decoration: underline;
+    }
+}
+.alert.alert-waiting {
+    background-image:url('../img/PreloaderTransp.gif');
+    background-repeat: no-repeat;
+    background-size:16px;
+    background-position: 10px 15px;
+    padding-left:32px;
+}
+// Error
+.editable-error-block {
+   font-size:16px;
+}
+// Tabs
+.tab-content > .tab-pane {
+   background-color:white;
+}
+.tab-content > .active {
+   border-style:solid;
+   border-color: #ccc;
+   border-width:0 1px 1px 1px;
+}
+.tab-content > .tab-pane > .tab-inner {
+   padding:24px;
+}
+.tab-content.sidenav > .active {
+   border:none;
+}
+.tab-pane {
+    > h3,
+    > h2,
+    > h1 {
+        &:first-child {
+            margin-top:0;
+        }
+    }
+}
+// Panels
+.panel {
+    .panel-body {
+        p:last-child {
+            margin-bottom:0;
+        }
+    }
+}
+// Wells
+.well {
+    .box-shadow(none);
+}
+// KBD
+kbd {
+    .box-shadow(none);
+    border:none;
+    font-size:85%;
+    border:1px solid darken(@kbd-bg, 5%);
+    border-radius:2px;
+}
+.nav.nav-sidenav {
+    > li > a {
+        border-left: 2px solid transparent;
+        padding: 6px 12px;
+    }
+    > .active > a,
+    > li > a:hover,
+    > li > a:focus {
+        color:@blue;
+        font-weight:bold;
+        border-left:2px solid @blue;
+        background-color:@white-dark;
+    }
+}
+.competitionPreloader {
+    background:url('../img/Preloader_Medium.gif') no-repeat center center;
+    width:50px;
+    height:50px;
+    position:absolute;
+    z-index:10;
+    margin:-25px 0 0 -25px;
+    left:50%;
+    top:50%;
+    display:block;
+}
+.preloader {
+    background:url('../img/Preloader_Medium.gif') no-repeat center center;
+    left:50%;
+    top:80px;
+    width:50px;
+    height:50px;
+    position:absolute;
+    z-index:30;
+}
+.buttonPreloader {
+    position:absolute;
+    margin:0;
+    left:50%;
+    margin-left:-15px;
+    top:7px;
+}
+.select2-container-multi {
+    .select2-choices {
+        .select2-search-field {
+            input:focus {
+                border:none;
+                .box-shadow(none);
+            }
+            input.select2-active {
+                background-color: #FFF;
+                background-image: url('../img/Preloader_Small.gif');
+                background-repeat: no-repeat;
+                background-size:16px;
+            }
+        }
+        .select2-search-choice {
+            line-height:inherit;
+            padding: 3px 5px 3px 18px;
+            .select2-search-choice-close {
+                left: 3px;
+                top: 3px;
+            }
+        }
+    }
+    &.select2-container-active .select2-choices {
+        border-color:@blue-light;
+    }
+}
+input[type="radio"], input[type="checkbox"] {
+    margin-top:6px;
+}
+.clearablefileinput .field-container {
+    padding-top:7px;
+    font-size:@font-size-med;
+}
+@media (min-width:@screen-xs) {
+    .form-horizontal .control-label {
+        padding-top:4px;
+    }
+}
+
+/* Competition detail page */
+.like, .dislike {
+    cursor: pointer;
+    cursor: hand;
+}
+.already-liked {
+    color: green;
+}
+.already-disliked {
+    color: red;
+}
+
+/* Everything below correspondes to the latest homepage*/
+.col-sm-6 .btn-group .btn-group a{
+    color:#777777;
+    font-weight: bold;
+    font-size: 18px;
+}
+.col-sm-6 .btn-group{
+    /* Safari 3-4, iOS 1-3.2, Android 1.6- */
+  -webkit-border-radius: 10px;
+  /* Firefox 1-3.6 */
+  -moz-border-radius: 10px;
+  /* Opera 10.5, IE 9, Safari 5, Chrome, Firefox 4, iOS 4, Android 2.1+ */
+  border-radius: 10px;
+  background: #FFC266;
+}
+
+.homepage_headers{
+    color:#739cb9;
+}
+
+
+/*Code for latest competitions in homepage*/
+/*
+This code is for 768px and up
+*/
+@media screen and (min-width: @screen-sm-min) {
+    .homepage-competition-tile {
+        //height: 110px;
+        .row{
+            height: 95%;
+            .col-sm-6{
+              height: 100%;
+              //overflow: scroll;
+            }
+            .col-sm-4{
+              padding-top: 15px;
+            }
+        }
+    }
+}
+
+
+// This cde is for 992px and up
+
+@media screen and (min-width: @screen-md-min) {
+    .homepage-competition-tile {
+        //height: 110px;
+        .row{
+          height: 95%;
+        .col-sm-6{
+          height: 100%;
+          //overflow: scroll;
+          padding-bottom: 10px;
+        }
+        .col-sm-4{
+          padding-top: 20px;
+        }
+        }
+    }
+}
+
+.competition-tile .row .right-panel-homepage{
+  line-height: 20px;
+}
+
+.competition-tile.full-width .row {
+    padding-bottom: 7px;
+}
+
+.container .row .competition-latest-list{
+  //padding-left: 35px;
+}
+
+@media (max-width:@screen-md) {
+    .container .row .competition-latest-list {
+        padding-left:5px;
+    }
+}
+
+.frontpage_code {
+   font-family: monospace;
+   font-size: 14px;
+   color: #33aa33;
+}
+
+// Stop errors/etc. from overflowing divs
+pre{
+    white-space: pre-wrap;
+}
+
+body textarea {
+  resize: vertical;
+}
+
+.logo-image {
+  max-width: 200px;
+}
+
+.image-removed {
+  display: none;
+}
+
+label[for="image-clear_id"] {
+  display: none;
+}
+
+#image-clear_id {
+  display: none;
+}
+
+.leader-top3 {
+    font-weight: bolder;
+    color: green;
+}
+
+starting_kit_td {
+    padding-top: @navbar-height + 2px;
+}
+
+starting_kit_table {
+    border: 1px solid #000000;
+}
+
+.finished-submission {
+    background-color: rgba(0, 255, 0, 0.1) !important;
+}
+
+.failed-submission {
+    background-color: rgba(255, 0, 0, 0.1) !important;
+}

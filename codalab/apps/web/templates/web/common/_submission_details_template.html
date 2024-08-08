@@ -1,0 +1,73 @@
+{% load codalab_tags %}
+    <div id="submission_details_template" class="hide">
+        <table>
+            <tr class="trDetails">
+                <td class="tdDetails">
+                    <div class="submission_details">
+                        <div class="bundle__meta__desc">
+                            <p class="submission_description">No description given.</p>
+                            <textarea name="updated_description" class="hide" placeholder="new description" style="display: block; width: 100%; margin-bottom: 12px;"></textarea>
+                            <button class="btn btn-primary save_description_btn hide">save description</button>
+                            <button class="btn btn-primary update_description_btn">update description</button>
+                            <p class="submission_team_name"></p>
+                            <p class="submission_method_name"></p>
+                            <p class="submission_method_description"></p>
+                            <p class="submission_project_url"></p>
+                            <p class="submission_publication_url"></p>
+                            <p class="submission_bibtex"></p>
+                            <p class="submission_organization_or_affiliation"></p>
+                        </div>
+                        {# _'s are replaced by the submission ID in hrefs... so I'll use that to hook the traceback in #}
+                        <div class="traceback"><a href="traceback/_/"></a></div>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <ul class="list-unstyled">
+                                    {# <li><a href="/my/competition/submission/_/input.zip">Download your submission</a></li> #}
+                                    {% if is_admin_or_owner or is_viewing_own_submissions or not phase.is_blind %}
+                                        <li><a href="/my/competition/submission/_/stderr.txt" target="_blank">View scoring error log</a></li>
+                                    {% elif is_admin_or_owner %}
+                                        <li><a href="/my/competition/submission/_/stdout.txt" target="_blank">View scoring output log</a></li>
+                                        <li><a href="/my/competition/submission/_/stderr.txt" target="_blank">View scoring error log</a></li>
+                                        {% if not phase.is_scoring_only %}
+                                            <li><a href="/my/competition/submission/_/predict_stdout.txt" target="_blank">View predict output log</a></li>
+                                            <li><a href="/my/competition/submission/_/predict_stderr.txt" target="_blank">View predict error log</a></li>
+                                            <li><a href="/my/competition/submission/_/prediction-output.zip">Download output from prediction step</a></li>
+                                            {% if phase.ingestion_program %}
+                                                <li><a href="/my/competition/submission/_/ingestion_program_stdout_file.txt" target="_blank">View ingestion output log</a></li>
+                                                <li><a href="/my/competition/submission/_/ingestion_program_stderr_file.txt" target="_blank">View ingestion error log</a></li>
+                                            {% endif %}
+                                        {% endif %}
+                                        {% if phase.competition.enable_detailed_results %}
+                                            <li><a href="/my/competition/submission/_/detailed_results" target="_blank">View detailed results</a></li>
+                                        {% endif %}
+                                            <li><a href="/my/competition/submission/_/output.zip">Download output from scoring step</a></li>
+                                            <li><a href="/my/competition/submission/_/private_output.zip">Download private output from scoring step</a></li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                            <div class="col-sm-3 preloader-handler"></div>
+                            <div class="col-sm-3">
+                                <button class="leaderboard_button btn btn-default pull-right hide"></button><br>
+                                {% if phase.competition.allow_public_submissions %}
+                                <button class="public_link btn btn-danger pull-right">Make your submission public</button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+        <table id="submission_row_template">
+            <tr>
+                <input type="hidden" name="state" value="0" />
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td class="statusName"></td>
+                <td class="status not_submitted"></td>
+                <td><span class="glyphicon glyphicon-plus"></span></td>
+            </tr>
+        </table>
+    </div>

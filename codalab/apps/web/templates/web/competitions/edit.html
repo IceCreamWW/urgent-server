@@ -1,0 +1,482 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% load codalab_tags %}
+{% load static %}
+
+{% block head_title %}Edit Competition{% endblock head_title %}
+{% block page_title %}Edit Competition{% endblock page_title %}
+
+{% block extra_headers %}
+    <link rel="stylesheet" href="{% static "css/jquery.datetimepicker.css" %}">
+{% endblock extra_headers %}
+{% block extra_scripts %}
+    <script src="{% static "tiny_mce/tiny_mce.js" %}"></script>
+    <script src="{% static "js/vendor/jquery.are-you-sure.js" %}"></script>
+{% endblock extra_scripts %}
+
+{% block content %}
+<div class='container-fluid'>
+    <a href="{% url "competitions:view" pk=competition.pk %}" >Go Back to Competition Homepage</a>
+    <a class="pull-right" href="https://github.com/codalab/codalab/wiki/User_Competition-Roadmap" title="Get help with creating a competition" target="_blank"><span class="glyphicon glyphicon-question-sign"></span> Help</a>
+</div>
+<a class="btn btn-secondary" href="{% url 'competitions:download_yaml' competition_pk=competition.pk %}">Download original YAML file</a>
+<form id="competition_edit_form" class="form-horizontal form-controller margin-top" data-abide enctype="multipart/form-data" method="POST">{% csrf_token %}
+    <fieldset>
+        <legend>General Information</legend>
+        {% for field in form %}
+            <div class="fieldWrapper form-group {% field_type field %}">
+                {% if field|is_checkbox %}
+                    <div class="col-sm-9 col-sm-offset-3">
+                        <div class="checkbox">
+                            <label>
+                                {{ field }}
+                                {{field.label}}
+                            </label>
+                            {{ field.errors }}
+                            {% if field.help_text %}
+                                <i>{{ field.help_text }}</i>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% elif field.label == 'Admins' %}
+                    <label for="{{field.id_for_label}}" class="col-sm-3 control-label">
+                        {{field.label}}{{form.label_suffix}}
+                    </label>
+                    <div class="col-sm-9">
+                        <div class="field-container">
+                            <select multiple id="id_admins" name="admins">
+                                {% for admin in competition.admins.all %}
+                                    <option value="{{ admin.pk }}" selected>{{ admin.username }}</option>
+                                {% endfor %}
+                            </select>
+                            {{ field.errors }}
+                        </div>
+                    </div>
+                {% else %}
+                    <label for="{{field.id_for_label}}" class="col-sm-3 control-label">
+                        {{field.label}}{{form.label_suffix}}
+                    </label>
+                    <div class="col-sm-9">
+                        <div class="field-container">
+                            {{ field }}
+                            {{ field.errors }}
+                            <p><i>{{ field.help_text }}</i></p>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </fieldset>
+    <fieldset>
+        <legend>Web Pages</legend>
+        <ul id="pages" class="list-unstyled">
+            {{ Pages.management_form }}
+            {{ Pages.non_form_errors }}
+            <li class="empty-page-form">
+                <div class="panel panel-primary page">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">
+                            Web Page
+                        </h3>
+                    </div>
+                    <div class="panel-body">
+                        {% for field in Pages.empty_form %}
+                            {% if field.is_hidden %}
+                                {{ field }}
+                            {% else %}
+                                <div class="fieldWrapper form-group {% field_type field %}">
+                                    {% if field|is_checkbox %}
+                                        <div class="col-sm-9 col-sm-offset-3">
+                                            {% if field.name == 'DELETE' %}
+                                                {{ field }}
+                                            {% else %}
+                                                <div class="checkbox">
+                                                    <label>
+                                                        {{ field }}
+                                                        {{ field.label }}
+                                                    </label>
+                                                    {{ field.errors }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    {% else %}
+                                        <label for="{{field.id_for_label}}" class="col-sm-3 control-label">{{field.label}}{{form.label_suffix}}</label>
+                                        <div class="col-sm-9">
+                                            <div class="field-container">
+                                                {{ field }}
+                                                {{ field.errors }}
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </li>
+            {% for page in Pages %}
+            <li>
+                <div class="panel panel-default page">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">
+                            Web Page
+                        </h3>
+                    </div>
+                    <div class="panel-body">
+                        {% for field in page %}
+                            {% if field.is_hidden %}
+                                {{ field }}
+                            {% else %}
+                                <div class="fieldWrapper form-group {% field_type field %}">
+                                    {% if field|is_checkbox %}
+                                        <div class="col-sm-9 col-sm-offset-3">
+                                            {{ field }}
+                                            {{ field.errors }}
+                                        </div>
+                                    {% else %}
+                                        <label for="{{field.id_for_label}}" class="col-sm-3 control-label">{{field.label}}{{form.label_suffix}}</label>
+                                        <div class="col-sm-9">
+                                            <div class="field-container page-container">
+                                                {{ field }}
+                                                <div class="form-group {% if field.errors %}alert alert-danger{% endif %}">
+                                                    {{ field.errors }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+        <button type="button" class="button add-page btn btn-secondary pull-right">Add Page</button>
+    </fieldset>
+    <fieldset>
+        <legend>Phases</legend>
+        <ul id="phases" class="list-unstyled">
+            {{ Phases.management_form }}
+            {{ Phases.non_form_errors }}
+            <li class="empty-phase-form">
+                <div class="phase panel panel-primary">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">
+                            Phase
+                        </h3>
+                    </div>
+                    <div class="panel-body">
+                        {% for field in Phases.empty_form %}
+                            {% if field.is_hidden %}
+                                {{ field }}
+                            {% else %}
+                                <div class="fieldWrapper form-group {% field_type field %}">
+                                    {% if field|is_checkbox %}
+                                        <div class="col-sm-9 col-sm-offset-3">
+                                            <div class="checkbox">
+                                                <label>
+                                                    {{ field }}
+                                                    {{field.label}}
+                                                </label>
+                                                {{ field.errors }}
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <label for="{{field.id_for_label}}" class="col-sm-3 control-label">{{field.label}}{{form.label_suffix}}</label>
+                                        <div class="col-sm-9">
+                                            <div class="field-container">
+                                                {{ field }}
+                                                {{ field.errors }}
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </li>
+        {% for form in Phases %}
+            <li>
+                <div class="phase panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">
+                            Competition Phase
+                        </h3>
+                    </div>
+                    <div class="panel-body">
+                        {% for field in form %}
+                            {% if field.is_hidden %}
+                                {{ field }}
+                            {% else %}
+                                {% if field.name == "starting_kit_organizer_dataset" %}
+                                <div class="form-group">
+                                    <div class="col-sm-9 col-sm-offset-3">
+                                        <p>You can add, remove, and modify datasets in the <a href="{% url 'my_competitions_entered' %}">My Datasets</a> section</p>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                <div class="fieldWrapper form-group {% field_type field %}">
+                                    {% if field|is_checkbox %}
+                                        <div class="col-sm-9 col-sm-offset-3">
+                                            {% if field.name == 'DELETE' %}
+                                                {{ field }}
+                                            {% else %}
+                                                <div class="checkbox">
+                                                    <label>
+                                                        {{ field }}
+                                                        {{ field.label }}
+                                                    </label>
+                                                    {{ field.errors }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    {% else %}
+                                        <label for="{{field.id_for_label}}" class="col-sm-3 control-label">{{field.label}}{{form.label_suffix}}</label>
+                                        <div class="col-sm-9">
+                                            <div class="field-container">
+                                                {{ field }}
+                                                {{ field.errors }}
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+{#        <button type="button" class="medium blue button add-phase btn btn-secondary pull-right">Add Phase</button>#}
+    </fieldset>
+
+    <fieldset>
+        <legend>Leaderboard</legend>
+        <ul id="leaderboards" class="list-unstyled">
+            {{ Leaderboards.management_form }}
+            {{ Leaderboards.non_form_errors }}
+
+        {% for form in Leaderboards %}
+            <li>
+                <div class="leaderboard panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">
+                            Leaderboard
+                        </h3>
+                    </div>
+                    <div class="panel-body">
+                        {% for field in form %}
+                            {% if field.is_hidden %}
+                                {{ field }}
+                            {% else %}
+                                <div class="fieldWrapper form-group {% field_type field %}">
+                                    {% if field|is_checkbox %}
+                                        <div class="col-sm-9 col-sm-offset-3">
+                                            {% if field.name != 'DELETE' %}
+                                                <div class="checkbox">
+                                                    <label>
+                                                        {{ field }}
+                                                        {{ field.label }}
+                                                    </label>
+                                                    {{ field.errors }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    {% else %}
+                                        <label for="{{field.id_for_label}}" class="col-sm-3 control-label">{{field.label}}{{form.label_suffix}}</label>
+                                        <div class="col-sm-9">
+                                            <div class="field-container">
+                                                {{ field }}
+                                                {{ field.errors }}
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+        <!--<button type="button" class="medium blue button add-leaderboard btn btn-secondary pull-right">Add Leaderboard?</button>-->
+    </fieldset>
+    <hr />
+    <div class="row">
+        <div class="col-sm-4 col-sm-offset-4">
+            <button type="submit" class="medium button blue btn btn-primary btn-block">Submit</button>
+        </div>
+    </div>
+</form>
+
+<style>
+    .alert-danger {
+        width: 100%;
+        margin-top: 0.5em;
+        margin-left: 0 !important;
+        margin-bottom: -5px;
+    }
+
+    .errorlist {
+        list-style-type: none;
+        text-align: left;
+    }
+
+    .errorlist li {
+        color: red;
+    }
+</style>
+{% endblock content %}
+
+{% block jsincludes %}
+    <script src="{% static "js/vendor/django-formset.js" %}"></script>
+    <script src="{% static "js/vendor/jquery.datetimepicker.js" %}"></script>
+{% endblock jsincludes %}
+
+<script type="text/javascript">
+{% block js %}
+$('document').ready(function () {
+    $("#id_admins").select2({
+        width: "100%",
+        dropdownAutoWidth: true,
+        ajax: {
+            url: '/user_lookup/',
+            delay: 250
+        },
+        cache: true,
+        minimumInputLength: 1
+    });
+
+    tinyMCE.init({
+        theme : "advanced",
+        mode : "none",
+        plugins : "table, paste, advlink, fullscreen",
+        theme_advanced_buttons3_add : "tablecontrols, fullscreen",
+        table_styles : "Header 1=header1;Header 2=header2;Header 3=header3",
+        table_cell_limit : 100,
+        table_row_limit : 5,
+        table_col_limit : 5,
+        verify_html : true
+	});
+
+    // This will add html editor to edit pages
+    $('.page-container').find('textarea').each(function(){
+        tinyMCE.execCommand('mceAddControl', false, this.id);
+    });
+
+	// This hopefully reinds you to save.
+	$('form').areYouSure( { message:"This message apparently has no affect." } );
+
+    // This helps make sections appear with Foundation
+
+    $(document).find("input[name*='_date']").datetimepicker({
+        format: 'Y-m-d H:i:s',
+        formatTime: 'H:i:s',
+        formatDate: 'Y-m-d',
+        value: $(this).val(),
+        allowBlank: true,
+        defaultSelect: false
+    });
+
+    // Hide order for everything < 2
+    $('#pages').find("[name*=rank]").each(function (index, value) {
+        if (value.value <= 2) {
+            $(value).parents(".fieldWrapper").hide();
+        }
+    });
+
+    // Hide Category, it's not modifiable
+    $('#pages').find("[name*=category]").each(function (index, value) {
+        $(value).parents(".fieldWrapper").hide();
+    });
+
+    $('#pages').children('.empty-page-form').hide();
+    pages = $('#pages').children('li').djangoFormset({
+        formTemplateClass: 'empty-page-form'
+    });
+
+    pages.forms.each(function (index, form) {
+        form.pDelete = form.delete;
+        form.delete = function () {
+            if (confirm("Are you sure you want to delete this page?")) {
+                form.pDelete();
+            }
+        };
+    });
+
+    $('.add-page').click(function () {
+        var nextPage = 0;
+        $('#pages').find("[name*=rank]").each(function (index, value) {
+            nextPage = Math.max(nextPage, parseInt(value.value) + 1);
+        });
+        form = pages.addForm();
+        form.elem.toggle();
+        wlp = window.location.pathname.split("/");
+        form.elem.find("[name$=container]").val(wlp[wlp.length - 1]);
+        var rank = form.elem.find("[name*=rank]");
+        rank.parents(".fieldWrapper").show();
+        form.elem.find("textarea").each(function () {
+            tinyMCE.execCommand('mceAddControl', false, this.id);
+        });
+        rank.val(nextPage);
+        nextPage += 1;
+        form.pDelete = form.delete;
+        form.delete = function () {
+            if (confirm("Are you sure you want to delete this page?")) {
+                this.elem.find("textarea").each(function (idx, val) {
+                    if (tinyMCE.getInstanceById(val.id)) {
+                        tinyMCE.execCommand('mceFocus', false, val.id);
+                        tinyMCE.execCommand('mceRemoveControl', false, val.id);
+                    }
+                });
+                this.pDelete();
+            }
+        };
+    });
+
+    // Dynamic adding/removing of phases
+    $('#phases').children('.empty-phase-form').hide();
+    phases = $('#phases').children('li').djangoFormset({
+        formTemplateClass: 'empty-phase-form'
+    });
+
+    phases.forms.each(function (index, phase) {
+        phase.pDelete = phase.delete;
+        phase.delete = function () {
+            if (confirm("Are you sure you want to delete this phase?")) {
+                phase.pDelete();
+            }
+        };
+    });
+
+    $('.add-phase').click(function () {
+        form = phases.addForm();
+        form.elem.toggle();
+        form.elem.find('[name$=phasenumber]')[0].value = form.index;
+        form.elem.find("input[name*='_date']").datetimepicker({
+            format: 'Y-m-d H:i:s',
+            formatTime: 'H:i:s',
+            formatDate: 'Y-m-d',
+            value: $(this).val(),
+            allowBlank: true,
+            defaultSelect: false
+        });
+        form.pDelete = form.delete;
+        form.delete = function () {
+            if (confirm("Are you sure you want to delete this phase?")) {
+                this.pDelete();
+            }
+        };
+    });
+
+    var toggle_url_redirect_disable = function() {
+        if ($('input#id_has_registration')[0].checked){
+            $('input#id_url_redirect').attr("disabled", "disabled")
+        }else{
+            $('input#id_url_redirect').removeAttr("disabled", "disabled")
+        }
+    };
+    toggle_url_redirect_disable();
+    $('input#id_has_registration').on('click', toggle_url_redirect_disable);
+  });
+{% endblock js %}
+</script>

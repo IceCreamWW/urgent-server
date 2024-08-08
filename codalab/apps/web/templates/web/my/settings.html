@@ -1,0 +1,128 @@
+﻿{% extends 'base.html' %}
+{% load staticfiles %}
+{% load codalab_tags %}
+{% load tz %}
+
+{% block page_title %}User Settings{% endblock page_title %}
+{% block head_title %}User Settings{% endblock %}
+
+{% block extra_head %}
+{# include extra JS stuff here #}
+{% endblock %}
+
+{% block content %}
+<form method="POST" action=".">{% csrf_token %}
+    <h2>{{ user.username }}</h2>
+    {% if errors %}
+        <div class="alert alert-error">
+            There were errors processing the form, please try reloading the page!
+        </div>
+    {% endif %}
+
+    {% if saved_successfully %}
+        <div class="alert alert-success">
+            Saved successfully!
+        </div>
+    {% endif %}
+
+    {% if form.errors %}
+        <div class="alert alert-error">
+            {% for field, msg in form.errors.items %}
+                <b>{{ field }}</b> {{ msg }}
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <h3><b>Basic settings {% if user.is_staff %}<span class="label label-info">Staff</span>{% endif %}{% if user.is_superuser %} <span class="label label-success">Admin</span>{% endif %}</b></h3>
+
+    <div class="row">
+        <div class="col-sm-12">
+            <table class="table table-striped account">
+                <tbody>
+                    <tr>
+                        <th>First name</th>
+                        <td>{{ form.first_name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Last name</th>
+                        <td>{{ form.last_name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Email</th>
+                        <td>{{ form.email }}</td>
+                    </tr>
+                    <tr>
+                        <th>Date joined</th>
+                        <td>{{ user.date_joined }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <h3><b>Competition settings</b></h3>
+
+    <div class="row">
+        <div class="col-sm-12">
+            <table class="table table-striped affiliation">
+                <tbody>
+                    <tr>
+                        <th>{{ form.team_name.label }}</th>
+                        <td>{{ form.team_name }}</td>
+                    </tr>
+                    <tr>
+                        <th>{{ form.team_members.label }}<br><i style="font-weight: normal;">(each member on a new line)</i></th>
+                        <td>{{ form.team_members }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-12">
+
+            <table class="table table-striped subscriptions">
+                <tbody>
+                    <tr>
+                        <th>{{ form.participation_status_updates.label }}</th>
+                        <td>{{ form.participation_status_updates }}</td>
+                    </tr>
+                    <tr>
+                        <th>{{ form.organizer_status_updates.label }}</th>
+                        <td>{{ form.organizer_status_updates}}</td>
+                    </tr>
+                    <tr>
+                        <th>{{ form.organizer_direct_message_updates.label }}</th>
+                        <td>{{ form.organizer_direct_message_updates }}</td>
+                    </tr>
+                    <tr>
+                        <th>{{ form.email_on_submission_finished_successfully.label }}</th>
+                        <td>{{ form.email_on_submission_finished_successfully }}</td>
+                    </tr>
+                    <tr>
+                        <th>{{ form.allow_forum_notifications.label }}</th>
+                        <td>{{ form.allow_forum_notifications }}</td>
+                    </tr>
+                    <tr>
+                        <th>{{ form.allow_admin_status_updates.label }}</th>
+                        <td>{{ form.allow_admin_status_updates }}</td>
+                    </tr>
+                    {% if USE_MAILCHIMP %}
+                    <tr>
+                        <th>{{ form.newsletter_opt_in.label }}</th>
+                        <td>{{ form.newsletter_opt_in }}</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <input type="submit" class="btn btn-primary margin-top" value="Save Changes">
+</form>
+{% endblock %}
+
+{% block js %}
+
+{% endblock js %}

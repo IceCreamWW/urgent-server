@@ -1,0 +1,82 @@
+{% extends 'base_account.html' %}
+
+{% load i18n %}
+
+{% block head_title %}Sign Up{% endblock head_title %}
+{% block page_title %}Sign Up{% endblock page_title %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        {% if socialaccount.providers %}
+            <p>
+                {% blocktrans %}
+                    You may sign up with one of your existing third party accounts.
+                {% endblocktrans %}
+            </p>
+            <div class="socialaccount_ballot">
+                <ul class="socialaccount_providers">
+                    {% include "socialaccount/snippets/provider_list.html" %}
+                </ul>
+                <div class="login-or">{% trans 'Or, sign up with the form below:' %}</div>
+            </div>
+            {% include "socialaccount/snippets/login_extra.html" %}
+        {% endif %}
+	    <form class="signup" id="signup_form" method="post" action="{% url 'account_signup' %}">
+		    {% csrf_token %}
+
+            {% if form.errors %}
+                <div class="alert alert-error">
+                    {% for field, msg in form.errors.items %}
+                        <b>{{ field }}</b> {{ msg }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="form-group">
+                <label for="id_username">*Username:</label>
+                <input id="id_username" class="form-control" name="username" autofocus placeholder="Username" type="text" value="{{ form.username.value|default_if_none:"" }}">
+            </div>
+            <div class="form-group">
+                <label for="id_email">*E-mail:</label>
+                <input id="id_email" class="form-control" name="email" placeholder="E-mail address" type="text" value="{{ form.email.value|default_if_none:"" }}">
+            </div>
+            <div class="form-group">
+                <label for="id_password1">*Password:</label>
+                <input id="id_password1" class="form-control" name="password1" placeholder="Password" type="password" value="{{ form.password1.value|default_if_none:"" }}">
+            </div>
+            <div class="form-group">
+                <label for="id_password2">*Password (again):</label>
+                <input id="id_password2" class="form-control" name="password2" placeholder="Password" type="password" value="{{ form.password2.value|default_if_none:"" }}">
+                <input id="id_confirmation_key" name="confirmation_key" type="hidden">
+            </div>
+
+            {% if USE_MAILCHIMP %}
+                <div class="form-group">
+                    <input type='checkbox' id="id_newsletter_opt_in" name='newsletter_opt_in' value="{{ form.newsletter_opt_in.value|default_if_none:"" }}">
+                    <label for="id_newsletter_opt_in">I'd like to receive the CodaLab newsletter</label>
+                </div>
+            {% else %}
+                <input type='hidden' id="id_newsletter_opt_in" value="">
+            {% endif %}
+
+            <div class="form-group">
+                <input type='checkbox' id="id_accept_rules" name='accept_rules' required="True">
+                <label for="id_accept_rules">I accept the <a href="https://github.com/codalab/codalab-competitions/wiki/Privacy" target="_blank">terms and conditions</a></label>
+            </div>
+
+            {% if redirect_field_value %}
+		          <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+            {% endif %}
+            <button class="btn btn-primary margin-top" type="submit">{% trans "Sign Up" %}</button>
+	    </form>
+        <p>
+        <p>
+            {% blocktrans %}
+                <a href="{{ login_url }}">Already have an account? Login instead!</a>
+            {% endblocktrans %}
+        </p>
+        </p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,266 @@
+{% load account %}
+{% load analytical %}
+{% load codalab_tags %}
+{% load compress %}
+{% load static %}
+
+<!DOCTYPE html>
+<html class="no-js" {% block custom_html_attributes %}{% endblock %} lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="globalsign-domain-verification" content="1lsowFdlUrrtcRyvAiFS11btFe-ChVU8h2FmxHw7sD" />
+
+    <!-- Set the viewport width to device width for mobile -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link type="image/x-icon" rel="shortcut icon" href="{% static "img/favicon.ico" %}">
+    {% block meta %}
+    {% endblock %}
+
+    <title>URGENT Challenge - {% block head_title %}{% endblock %}</title>
+
+    {% block css %}
+        <!-- Included CSS Files (Compressed) -->
+        <link rel="stylesheet" href="{% static "css/jquery.dataTables.css" %}">
+        <link rel="stylesheet" href="{% static "css/jquery-editable.css" %}">
+        <link rel="stylesheet" href="{% static "js/vendor/select2/select2.css" %}" />
+        {% if compile_less %}
+            <link rel="stylesheet" type="text/css" href="{% static "css/imports.css" %}">
+        {% else %}
+            <link rel="stylesheet/less" type="text/css" href="{% static "less/imports.less" %}">
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/less.js/1.7.5/less.min.js"
+                    integrity="sha512-XP/yjFiZF4d9fQcMmTfP04E2N/+Z+/DliP4td0me8V9pDu45+N+jQt49uxM/OJzSuh5auQNhQTnl9lITx7tLyA=="
+                    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        {% endif %}
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.bundle.min.js"
+                integrity="sha512-0qNBDZgOKlY8fVi38IMT+vFkFbRdh4jJehDR31fn3a61Vp8DoC1XSERCIW/AgVs+0xjRIuarbBBmt78v1btb3A=="
+                crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="{% static "js/vendor/jquery-3.6.0.min.js" %}"></script>
+        <script src="{% static "js/vendor/custom.modernizr.js" %}"></script>
+        <!-- IE Fix for HTML5 Tags -->
+        <!--[if lt IE 9]>
+            <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+    {% endblock css %}
+
+    {% block extra_headers %}
+    {% endblock extra_headers %}
+
+    {% analytical_head_top %}
+    {% analytical_head_bottom %}
+
+    {% block extra_scripts %}
+    {% endblock extra_scripts %}
+
+
+    <script type="text/javascript">
+
+    </script>
+</head>
+
+<body {% block custom_body_attributes %}{% endblock %}>
+    <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar_collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                {% block title %}
+                    <a class="navbar-brand" href="/" tabIndex=1 target="_self">
+                        {% if CUSTOM_HEADER_LOGO %}
+                            <img src="{{ CUSTOM_HEADER_LOGO }}" alt="Home">
+                        {% else %}
+                            <img src="{% static "img/codalab-logo-fullcolor-positive.png" %}" alt="Home">
+                        {% endif %}
+                    </a>
+                {% endblock title %}
+            </div>
+            {% block top_bar_right_menus %}
+                <div class="collapse navbar-collapse" id="navbar_collapse">
+                    {% if BETA %}
+                        <form action="/search" method="get" class="navbar-form navbar-left" role="search">
+                            <div class="form-group">
+                                <input class="form-control" name="q" type="search" placeholder="Search">
+                            </div>
+                        </form>
+                    {% endif %}
+                    <ul class="nav navbar-nav navbar-right">
+                          <li class="{% active request '/my/' %}">
+                              {% if SINGLE_COMPETITION_VIEW_PK %}
+                                  {% if request.user.is_superuser or request.user.is_staff %}
+                                      <a href="/my/">My Competitions</a>
+                                  {% endif %}
+                              {% else %}
+                                  {% if user.is_authenticated %}
+                                      <a href="/my/">My Competitions</a>
+                                  {% else %}
+                                      <a href="/competitions/">Search Competitions</a>
+                                  {% endif %}
+                              {% endif %}
+                          </li>
+                          <li class="{% active request '/my/' %}">
+                          {% if not user.is_authenticated %}
+                          <a href="{% url 'account_login' %}?next={{request.path}}" target="_self">My Competitions</a>
+                          {% endif %}
+                          </li>
+                        <li>
+                            <a href="https://urgent-challenge.github.io/urgent2024/faq" target="_blank">Help</a>
+                        </li>
+                        {% if user.is_authenticated %}
+                            <li class="dropdown {% active request '/accounts/' %}">
+                                <a href="{% url 'user_settings' %}">
+                                    <img src="{% static "img/icon_mini_avatar.png" %}" class="mini-avatar" alt="{{user.username}}"> {{user.username}} <span class="caret"></span>
+                                </a>
+                                <ul class="dropdown-menu" role="menu">
+                                    {% if user.is_superuser %}
+                                        <li><a href="{% url 'admin_monitoring_links' %}">Admin Monitoring Links</a></li>
+                                        <li class="divider"></li>
+                                        <li><a href="{% url 'admin_competitions_manager' %}">Admin Competitions Manager</a></li>
+                                        <li class="divider"></li>
+                                        <li><a href="{% url 'customize_codalab' %}">Customize Codalab</a></li>
+                                        <li class="divider"></li>
+                                        <li><a href="{% url 'su-login' %}">Switch User</a></li>
+                                        <li class="divider"></li>
+                                    {% endif %}
+                                    <li><a href="{% url 'user_settings' %}">Settings</a></li>
+                                    <li class="divider"></li>
+                                    <li><a href="/accounts/password/reset/" target="_self">Change Password</a></li>
+                                    {% if USE_MAILCHIMP %}
+                                        <li class="divider"></li>
+                                        <li><a href="/newsletter/signup/" target="_self">Newsletter</a></li>
+                                    {% endif %}
+                                    <li class="divider"></li>
+                                    <li><a href="{% url 'account_logout' %}" target="_self">Sign Out</a></li>
+                                </ul>
+                            </li>
+                        {% else %}
+                            {% if USE_MAILCHIMP %}
+                                <li>
+                                    <a href="/newsletter/signup/" target="_self">Newsletter</a>
+                                </li>
+                            {% endif %}
+                            <li>
+                                <a href="{% url 'account_signup' %}?next={{request.path}}" target="_self">Sign Up</a>
+                            </li>
+                            <li>
+                                <a href="{% url 'account_login' %}?next={{request.path}}" target="_self">Sign In</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            {% endblock top_bar_right_menus %}
+        </div>
+    </nav>
+
+    {% block nosubheader %}
+        {% block subheader %}
+            <div class="page-header">
+                <div class="container">
+                    <h1>{% block page_title %}{% endblock page_title %}</h1>
+                </div>
+            </div>
+        {% endblock subheader %}
+    {% endblock nosubheader %}
+
+    {% block hero_subheader %}
+    {% endblock hero_subheader %}
+
+    {% block content_wrapper %}
+        <div class="{% if stretch_100_percent_width %}container-fluid{% else %}container{% endif %}" style="padding-bottom: 40px;">
+            {% block content %}
+            {% endblock content %}
+        </div>
+    {% endblock content_wrapper %}
+
+    <footer class="navbar-fixed-bottom">
+        <div class="container-fluid">
+            <ul class="nav navbar-nav navbar-right">
+            {% if USE_MAILCHIMP %}
+            <li><a href="/newsletter/signup/" target="_self">Newsletter</a></li>
+            {% endif %}
+                <li><a href="https://join.slack.com/t/urgentchallenge/shared_invite/zt-2jy2stg7q-79AGeAY0CpKHRl7r4X0e6g" target="_blank">Join us on Slack for contact & bug reports</a></li>
+                {% if SINGLE_COMPETITION_VIEW_PK %}
+                    <li><a href="http://codalab.org/" target="_blank">Powered by Codalab</a></li>
+                {% else %}
+                    <li><a href="http://codalab.org/" target="_blank">Powered by Codalab</a></li>
+                {% endif %}
+
+                <li><a>v{{ CODALAB_VERSION }}</a></li>
+            </ul>
+        </div>
+    </footer>
+
+    <script src="{% static 'js/vendor/jquery.validate.min.1.19.3.js' %}"></script>
+
+    <script src="{% static "bootstrap/js/bootstrap.min.js" %}"></script>
+    <script src="{% static "js/vendor/select2/select2-forked.js" %}"></script>
+    <script src="{% static "lib/jq/jquery.cookie.js" %}"></script>
+
+    <script type="text/javascript" src="{% static "js/app.js" %}"></script>
+    <script type="text/javascript" src="{% static "js/Competition.js" %}"></script>
+    <script type="text/javascript" src="{% static "js/main.js" %}"></script>
+
+    <div id="maintenance_modal" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Maintenance warning</h4>
+                </div>
+                <div class="modal-body">
+                    <!-- maintenance warning message.. -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button id="hide_maintenance_warning" type="button" class="btn btn-primary" data-dismiss="modal" onclick="hide_maintenance_warning">OK don't tell me again!</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+    {% block js %}
+        Competition.initialize();
+    {% endblock js %}
+        /*
+         * If we want to do huge maintenance again, can use this warning!
+         *
+        $(document).ready(function() {
+            var maintenance_warning = localStorage.getItem('maintenance_warning')
+            if(maintenance_warning === null) {
+                $("#maintenance_modal").modal('show')
+            }
+
+            $("#hide_maintenance_warning").click(function() {
+                localStorage.setItem('maintenance_warning', true)
+            })
+        })*/
+    </script>
+
+    {% block jsincludes %}
+    {% endblock jsincludes %}
+
+    {% analytical_body_top %}
+    {% analytical_body_bottom %}
+
+    {% if GOOGLE_ANALYTICS %}
+      <link rel="stylesheet" href="{% static "css/jquery-eu-cookie-law-popup.css" %}">
+      <script src="{% static "js/vendor/jquery-eu-cookie-law-popup.js" %}"></script>
+      <div class="eupopup eupopup-top"></div>
+      <script type="text/javascript">
+        //GOOGLE ANALYTICS SNIPPET
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+              (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+              m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+              })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+              ga('create', '{{ GOOGLE_ANALYTICS }}', 'auto');
+              ga('send', 'pageview');
+      </script>
+    {% endif %}
+</body>
+</html>
