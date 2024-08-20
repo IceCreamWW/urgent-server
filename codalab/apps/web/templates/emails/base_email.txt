@@ -6,7 +6,7 @@ Hello {{ user.username }},
 {% if not mass_email %}
 Thanks,
 
-URGENT Challenge Team
+EARS Benchmark Team
 {% endif %}
 
 
